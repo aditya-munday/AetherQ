@@ -46,6 +46,7 @@ jobs:
       - name: Summarize coverage
         run: |
           gcovr --root . --filter 'src/' --filter 'include/' --print-summary \
+            --gcov-ignore-parse-errors negative_hits.warn_once_per_file \
             --txt /tmp/coverage.txt --xml /tmp/coverage.xml --exclude 'build/'
           {
             echo "## Coverage summary"
