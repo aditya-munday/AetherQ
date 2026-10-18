@@ -67,8 +67,8 @@ LatencySummary summarize_latencies(std::vector<std::uint64_t> samples) {
     const auto lower = static_cast<std::size_t>(index);
     const auto upper = std::min(lower + 1, samples.size() - 1);
     const double fraction = index - static_cast<double>(lower);
-    const double low = static_cast<double>(samples[lower]);
-    const double high = static_cast<double>(samples[upper]);
+    const auto low = static_cast<double>(samples[lower]);
+    const auto high = static_cast<double>(samples[upper]);
     return low + ((high - low) * fraction);
   };
   summary.p50_ns = at(0.50);

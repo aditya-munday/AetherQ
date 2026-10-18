@@ -44,7 +44,7 @@ std::string cpu_model() {
   std::ifstream stream("/proc/cpuinfo");
   std::string line;
   while (std::getline(stream, line)) {
-    if (line.rfind("model name", 0) == 0) {
+    if (line.starts_with("model name")) {
       const auto colon = line.find(':');
       if (colon != std::string::npos) {
         std::string value = line.substr(colon + 1);
@@ -63,10 +63,10 @@ std::size_t physical_cores() {
   std::istringstream stream(text);
   std::string line;
   std::size_t unique = 0;
-  std::size_t last_id = static_cast<std::size_t>(-1);
+  auto last_id = static_cast<std::size_t>(-1);
   bool saw = false;
   while (std::getline(stream, line)) {
-    if (line.rfind("physical id", 0) == 0) {
+    if (line.starts_with("physical id")) {
       const auto colon = line.find(':');
       if (colon != std::string::npos) {
         const auto id = static_cast<std::size_t>(std::stoul(line.substr(colon + 1)));
@@ -157,7 +157,7 @@ EnvironmentInfo capture_environment() {
   info.git_dirty = std::string(git_dirty());
   info.timestamp_utc = utc_timestamp();
 #if defined(__linux__)
-  struct utsname uts{};
+  struct utsname uts {};
   if (uname(&uts) == 0) {
     info.os_name = uts.sysname;
     info.kernel_version = uts.release;
@@ -171,7 +171,7 @@ EnvironmentInfo capture_environment() {
 
 std::size_t peak_rss_bytes() {
 #if defined(__linux__)
-  struct rusage usage{};
+  struct rusage usage {};
   if (getrusage(RUSAGE_SELF, &usage) == 0) {
     return static_cast<std::size_t>(usage.ru_maxrss) * 1024;
   }

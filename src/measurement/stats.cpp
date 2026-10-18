@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <cmath>
+#include <ranges>
 
 namespace aetherq {
 
@@ -28,7 +29,7 @@ SummaryStats summarize(std::span<const double> samples) {
   if (sorted.empty()) {
     return stats;
   }
-  std::sort(sorted.begin(), sorted.end());
+  std::ranges::sort(sorted);
 
   double total = 0.0;
   for (const double value : sorted) {
@@ -46,14 +47,22 @@ SummaryStats summarize(std::span<const double> samples) {
   stats.stddev =
       sorted.size() > 1 ? std::sqrt(variance / static_cast<double>(sorted.size() - 1)) : 0.0;
 
-  stats.median = percentile(sorted, 0.5).value();
+  const std::optional<double> median = percentile(sorted, 0.5);
+  if (!median) {
+    return stats;
+  }
+  stats.median = *median;
   std::vector<double> deviations;
   deviations.reserve(sorted.size());
   for (const double value : sorted) {
     deviations.push_back(std::fabs(value - stats.median));
   }
-  std::sort(deviations.begin(), deviations.end());
-  stats.mad = percentile(deviations, 0.5).value();
+  std::ranges::sort(deviations);
+  const std::optional<double> mad = percentile(deviations, 0.5);
+  if (!mad) {
+    return stats;
+  }
+  stats.mad = *mad;
 
   constexpr std::size_t percentile_threshold = 20;
   if (sorted.size() >= percentile_threshold) {

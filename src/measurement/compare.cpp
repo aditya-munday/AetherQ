@@ -52,7 +52,7 @@ ComparisonResult compare_reports(const RunReport& baseline, const RunReport& can
   }
   if (lhs.logical_cores != rhs.logical_cores) {
     result.environment_mismatch = true;
-    result.environment_warnings.push_back("logical_cores differ");
+    result.environment_warnings.emplace_back("logical_cores differ");
   }
   if (lhs.compiler != rhs.compiler || lhs.compiler_version != rhs.compiler_version) {
     result.environment_mismatch = true;
