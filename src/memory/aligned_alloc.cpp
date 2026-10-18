@@ -1,12 +1,18 @@
 #include "aetherq/memory/aligned_alloc.hpp"
 
+#include <bit>
+#include <cstdint>
 #include <cstdlib>
 #include <memory>
 
 namespace aetherq {
 
 bool is_aligned(const void* pointer, std::size_t alignment) noexcept {
-  return reinterpret_cast<std::uintptr_t>(pointer) % alignment == 0;
+  if (alignment == 0) {
+    return false;
+  }
+  const auto address = std::bit_cast<std::uintptr_t>(pointer);
+  return address % alignment == 0;
 }
 
 std::size_t round_up(std::size_t value, std::size_t alignment) noexcept {
