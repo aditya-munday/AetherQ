@@ -1,0 +1,17 @@
+/out/
+/build/
+/artifacts/
+/out/vcpkg_installed/
+vcpkg_installed/
+compile_commands.json
+.cache/
+ccache/
+prompt\ \(2\).txt
+results/*
+!results/.gitkeep
+*.png
+*.csv
+*.gcda
+*.gcno
+*.profraw
+*.profdata

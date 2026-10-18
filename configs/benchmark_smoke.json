@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "threads": 2,
+  "scheduler": "thread_pool",
+  "allocator": "system",
+  "backend": "optimized",
+  "seed": 20260101,
+  "measurement": {
+    "warmup_iterations": 1,
+    "repetitions": 3,
+    "min_samples": 2,
+    "correctness_mode": false
+  }
+}

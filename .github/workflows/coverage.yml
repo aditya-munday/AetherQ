@@ -1,0 +1,63 @@
+name: coverage
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: coverage-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  coverage:
+    name: coverage
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg-cache,readwrite
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build ccache gcovr
+      - name: Restore vcpkg cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-coverage-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-coverage-${{ runner.os }}-
+      - name: Bootstrap vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$VCPKG_ROOT"
+          git -C "$VCPKG_ROOT" checkout 2024.12.16
+          "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics
+      - name: Configure
+        run: cmake --preset coverage
+      - name: Build
+        run: cmake --build --preset coverage -j 4
+      - name: Test
+        run: ctest --preset coverage --output-on-failure
+      - name: Summarize coverage
+        run: |
+          gcovr --root . --filter 'src/' --filter 'include/' --print-summary \
+            --txt /tmp/coverage.txt --xml /tmp/coverage.xml --exclude 'build/'
+          {
+            echo "## Coverage summary"
+            echo '```'
+            cat /tmp/coverage.txt
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: |
+            /tmp/coverage.txt
+            /tmp/coverage.xml
+          if-no-files-found: error

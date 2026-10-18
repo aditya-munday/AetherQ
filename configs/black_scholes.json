@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "threads": 4,
+  "scheduler": "thread_pool",
+  "allocator": "system",
+  "backend": "optimized",
+  "parallel_for": "guided",
+  "chunk_grain": 128,
+  "seed": 20260101,
+  "measurement": {
+    "warmup_iterations": 2,
+    "repetitions": 7,
+    "min_samples": 2,
+    "correctness_mode": false
+  }
+}

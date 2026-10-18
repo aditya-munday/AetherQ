@@ -1,0 +1,68 @@
+name: release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg-cache,readwrite
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build ccache
+      - name: Restore vcpkg cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-release-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-release-${{ runner.os }}-
+      - name: Bootstrap vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$VCPKG_ROOT"
+          git -C "$VCPKG_ROOT" checkout 2024.12.16
+          "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics
+      - name: Configure
+        run: cmake --preset release
+      - name: Build
+        run: cmake --build --preset release -j 4
+      - name: Test
+        run: ctest --preset release --output-on-failure
+      - name: Package
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          stage="aetherq-${tag}-linux-x86_64"
+          mkdir -p "dist/${stage}/bin" "dist/${stage}/configs"
+          cp build/release/aetherq "dist/${stage}/bin/"
+          cp -r configs/. "dist/${stage}/configs/"
+          cp README.md LICENSE "dist/${stage}/"
+          tar -C dist -czf "dist/${stage}.tar.gz" "${stage}"
+          cd dist
+          sha256sum "${stage}.tar.gz" > "${stage}.tar.gz.sha256"
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="${GITHUB_REF_NAME}"
+          gh release create "$tag" \
+            "dist/aetherq-${tag}-linux-x86_64.tar.gz" \
+            "dist/aetherq-${tag}-linux-x86_64.tar.gz.sha256" \
+            --title "AetherQ ${tag}" \
+            --generate-notes
