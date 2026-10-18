@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 #include <vector>
 
@@ -7,7 +8,7 @@
 
 namespace aetherq {
 
-enum class Verdict { improved, regressed, within_noise };
+enum class Verdict : std::uint8_t { improved, regressed, within_noise };
 
 struct MetricComparison {
   std::string name;

@@ -1,12 +1,13 @@
 #pragma once
 
+#include <cstdint>
 #include <mutex>
 #include <ostream>
 #include <string_view>
 
 namespace aetherq {
 
-enum class LogLevel { debug, info, warn, error };
+enum class LogLevel : std::uint8_t { debug, info, warn, error };
 
 std::string_view log_level_name(LogLevel level) noexcept;
 

@@ -9,10 +9,10 @@
 
 namespace aetherq {
 
-enum class SchedulerPolicy { serial, thread_pool };
-enum class AllocatorKind { system, arena, pool };
-enum class Backend { scalar, optimized };
-enum class ParallelForPolicy { static_chunk, guided, fixed_grain };
+enum class SchedulerPolicy : std::uint8_t { serial, thread_pool };
+enum class AllocatorKind : std::uint8_t { system, arena, pool };
+enum class Backend : std::uint8_t { scalar, optimized };
+enum class ParallelForPolicy : std::uint8_t { static_chunk, guided, fixed_grain };
 
 std::string_view to_string(SchedulerPolicy value) noexcept;
 std::string_view to_string(AllocatorKind value) noexcept;
