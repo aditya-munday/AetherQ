@@ -1,0 +1,14 @@
+{
+  "schema_version": 1,
+  "threads": 1,
+  "scheduler": "serial",
+  "allocator": "system",
+  "backend": "scalar",
+  "seed": 20260101,
+  "measurement": {
+    "warmup_iterations": 0,
+    "repetitions": 1,
+    "min_samples": 1,
+    "correctness_mode": true
+  }
+}

@@ -1,0 +1,16 @@
+{
+  "schema_version": 1,
+  "threads": 4,
+  "scheduler": "thread_pool",
+  "allocator": "arena",
+  "backend": "optimized",
+  "parallel_for": "static_chunk",
+  "chunk_grain": 64,
+  "seed": 20260101,
+  "measurement": {
+    "warmup_iterations": 2,
+    "repetitions": 7,
+    "min_samples": 2,
+    "correctness_mode": false
+  }
+}

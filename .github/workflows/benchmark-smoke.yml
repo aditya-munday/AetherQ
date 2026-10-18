@@ -1,0 +1,71 @@
+name: benchmark-smoke
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: benchmark-smoke-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  benchmark-smoke:
+    name: benchmark-smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      VCPKG_ROOT: ${{ github.workspace }}/vcpkg
+      VCPKG_BINARY_SOURCES: clear;files,${{ github.workspace }}/vcpkg-cache,readwrite
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install toolchain
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y ninja-build ccache python3-matplotlib
+      - name: Restore vcpkg cache
+        uses: actions/cache@v4
+        with:
+          path: ${{ github.workspace }}/vcpkg-cache
+          key: vcpkg-benchmark-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
+          restore-keys: vcpkg-benchmark-${{ runner.os }}-
+      - name: Bootstrap vcpkg
+        run: |
+          git clone https://github.com/microsoft/vcpkg.git "$VCPKG_ROOT"
+          git -C "$VCPKG_ROOT" checkout 2024.12.16
+          "$VCPKG_ROOT/bootstrap-vcpkg.sh" -disableMetrics
+      - name: Configure
+        run: cmake --preset benchmark
+      - name: Build
+        run: cmake --build --preset benchmark -j 4
+      - name: Run smoke benchmarks
+        run: |
+          mkdir -p results
+          ./build/benchmark/aetherq run monte_carlo --paths 200000 --threads 2 \
+            --config configs/benchmark_smoke.json --output results/mc.json --json > /dev/null
+          ./build/benchmark/aetherq validate results/mc.json
+          ./build/benchmark/aetherq bench allocation --items 50000 --repetitions 3 \
+            --json > results/allocation.json
+          ./build/benchmark/aetherq bench scaling --workload monte_carlo --threads 1,2 \
+            --paths 200000 --repetitions 3 --json > results/scaling.json
+      - name: Render plots
+        run: |
+          python3 tools/plot_results.py results/mc.json --out results
+          python3 tools/compare_runs.py results/mc.json results/mc.json --json > results/compare.json
+      - name: Summarize
+        run: |
+          {
+            echo "## Benchmark smoke (CI runners are noisy; numbers are smoke-only)"
+            echo '```'
+            ./build/benchmark/aetherq report results/mc.json --format text
+            echo '```'
+          } >> "$GITHUB_STEP_SUMMARY"
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: benchmark-smoke
+          path: results/
+          if-no-files-found: error
