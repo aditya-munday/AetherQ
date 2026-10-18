@@ -27,7 +27,7 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y ninja-build ccache gcovr
       - name: Restore vcpkg cache
-        uses: actions/cache@v4
+        uses: actions/cache@v6
         with:
           path: ${{ github.workspace }}/vcpkg-cache
           key: vcpkg-coverage-${{ runner.os }}-${{ hashFiles('vcpkg.json') }}
