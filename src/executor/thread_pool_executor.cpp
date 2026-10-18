@@ -99,7 +99,7 @@ const char* ThreadPoolExecutor::name() const noexcept {
 void ThreadPoolExecutor::record_failure(std::exception_ptr failure) {
   const std::lock_guard<std::mutex> lock(mutex_);
   if (first_failure_ == nullptr) {
-    first_failure_ = failure;
+    first_failure_ = std::move(failure);
   }
   failure_count_ += 1;
 }

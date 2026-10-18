@@ -18,6 +18,11 @@ public:
   ThreadPoolExecutor(std::size_t workers, std::size_t queue_capacity);
   ~ThreadPoolExecutor() override;
 
+  ThreadPoolExecutor(const ThreadPoolExecutor&) = delete;
+  ThreadPoolExecutor& operator=(const ThreadPoolExecutor&) = delete;
+  ThreadPoolExecutor(ThreadPoolExecutor&&) = delete;
+  ThreadPoolExecutor& operator=(ThreadPoolExecutor&&) = delete;
+
   Result<void> submit(TaskFunction task) override;
   Result<void> wait() override;
   void request_stop() override;
@@ -41,7 +46,7 @@ private:
   std::uint64_t completed_{0};
   std::uint64_t idle_waits_{0};
   bool stopping_{false};
-  std::exception_ptr first_failure_{};
+  std::exception_ptr first_failure_;
   std::size_t failure_count_{0};
 };
 
