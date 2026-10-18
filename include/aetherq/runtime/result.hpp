@@ -1,14 +1,15 @@
 #pragma once
 
+#include <cstdint>
+#include <optional>
 #include <stdexcept>
 #include <string>
 #include <string_view>
 #include <utility>
-#include <variant>
 
 namespace aetherq {
 
-enum class ErrorCode {
+enum class ErrorCode : std::uint8_t {
   invalid_argument,
   invalid_config,
   io_error,
@@ -23,14 +24,23 @@ std::string_view error_code_name(ErrorCode code) noexcept;
 
 class Error {
 public:
-  Error(ErrorCode code, std::string message);
+  Error(ErrorCode code, std::string message) : code_(code), message_(std::move(message)) {}
+  Error(const Error& other) = default;
+  Error& operator=(const Error& other) = default;
+  Error(Error&& other) noexcept = default;
+  Error& operator=(Error&& other) noexcept = default;
+  ~Error() = default;
 
-  [[nodiscard]] ErrorCode code() const noexcept;
-  [[nodiscard]] const std::string& message() const noexcept;
+  [[nodiscard]] ErrorCode code() const noexcept {
+    return code_;
+  }
+  [[nodiscard]] const std::string& message() const noexcept {
+    return message_;
+  }
   [[nodiscard]] std::string to_string() const;
 
 private:
-  ErrorCode code_;
+  ErrorCode code_{ErrorCode::internal};
   std::string message_;
 };
 
@@ -47,28 +57,40 @@ private:
 template<typename T>
 class Result {
 public:
-  Result(T value) : data_(std::move(value)) {}
-  Result(Error error) : data_(std::move(error)) {}
+  Result(T value) : value_(std::move(value)) {}
+  Result(Error error) : error_(std::move(error)) {}
 
   [[nodiscard]] bool ok() const noexcept {
-    return std::holds_alternative<T>(data_);
+    return value_.has_value();
   }
   explicit operator bool() const noexcept {
     return ok();
   }
 
   [[nodiscard]] T& value() & {
-    return std::get<T>(data_);
+    if (!value_) {
+      throw ErrorException(Error(error().code(), std::string("no value: ") + error().message()));
+    }
+    return *value_;
   }
   [[nodiscard]] const T& value() const& {
-    return std::get<T>(data_);
+    if (!value_) {
+      throw ErrorException(Error(error().code(), std::string("no value: ") + error().message()));
+    }
+    return *value_;
   }
   [[nodiscard]] T&& value() && {
-    return std::get<T>(std::move(data_));
+    if (!value_) {
+      throw ErrorException(Error(error().code(), std::string("no value: ") + error().message()));
+    }
+    return std::move(*value_);
   }
 
   [[nodiscard]] const Error& error() const {
-    return std::get<Error>(data_);
+    if (!error_) {
+      throw ErrorException(Error(ErrorCode::internal, "result holds a value, not an error"));
+    }
+    return *error_;
   }
 
   T& expect(std::string_view context) & {
@@ -79,38 +101,41 @@ public:
   }
 
 private:
-  std::variant<T, Error> data_;
+  std::optional<T> value_;
+  std::optional<Error> error_;
 };
 
 template<>
 class Result<void> {
 public:
   Result() = default;
-  Result(Error error) : error_(std::move(error)), ok_(false) {}
+  Result(Error error) : error_(std::move(error)) {}
 
   [[nodiscard]] bool ok() const noexcept {
-    return ok_;
+    return !error_.has_value();
   }
   explicit operator bool() const noexcept {
-    return ok_;
+    return ok();
   }
   [[nodiscard]] const Error& error() const {
-    return error_;
+    if (!error_) {
+      throw ErrorException(Error(ErrorCode::internal, "result holds a value, not an error"));
+    }
+    return *error_;
   }
 
   void expect(std::string_view context) const {
-    if (!ok_) {
-      throw ErrorException(Error(error_.code(), std::string(context) + ": " + error_.message()));
+    if (!ok()) {
+      throw ErrorException(Error(error().code(), std::string(context) + ": " + error().message()));
     }
   }
 
 private:
-  Error error_{ErrorCode::internal, std::string("no error")};
-  bool ok_{true};
+  std::optional<Error> error_;
 };
 
 inline Result<void> ok_result() {
-  return Result<void>();
+  return {};
 }
 
 }

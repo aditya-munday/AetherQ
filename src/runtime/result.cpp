@@ -24,16 +24,6 @@ std::string_view error_code_name(ErrorCode code) noexcept {
   return "unknown";
 }
 
-Error::Error(ErrorCode code, std::string message) : code_(code), message_(std::move(message)) {}
-
-ErrorCode Error::code() const noexcept {
-  return code_;
-}
-
-const std::string& Error::message() const noexcept {
-  return message_;
-}
-
 std::string Error::to_string() const {
   return std::string(error_code_name(code_)) + ": " + message_;
 }
