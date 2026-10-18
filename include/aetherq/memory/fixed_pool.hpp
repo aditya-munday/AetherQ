@@ -30,7 +30,7 @@ public:
   [[nodiscard]] bool owns(const void* pointer) const noexcept;
 
 private:
-  std::byte* storage_;
+  std::byte* storage_{nullptr};
   std::vector<std::uint32_t> free_list_;
   std::vector<bool> slot_used_;
   std::size_t object_bytes_;
@@ -38,7 +38,7 @@ private:
   std::size_t stride_;
   std::size_t alignment_;
   std::size_t free_count_;
-  std::size_t reuse_count_;
+  std::size_t reuse_count_{0};
   AllocationRecorder* recorder_;
 };
 

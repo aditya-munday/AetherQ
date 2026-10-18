@@ -8,7 +8,7 @@
 namespace aetherq {
 
 MonotonicArena::MonotonicArena(std::size_t capacity_bytes, AllocationRecorder* recorder)
-    : base_(nullptr), capacity_(capacity_bytes), offset_(0), peak_(0), recorder_(recorder) {
+    : capacity_(capacity_bytes), recorder_(recorder) {
   const std::size_t effective = capacity_bytes == 0 ? simd_alignment : capacity_bytes;
   base_ = static_cast<std::byte*>(aligned_allocate(effective, simd_alignment));
   capacity_ = effective;

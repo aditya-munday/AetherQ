@@ -18,10 +18,10 @@ void philox_round(std::uint32_t& c0, std::uint32_t& c1, std::uint32_t& c2, std::
       static_cast<std::uint64_t>(philox_m0) * static_cast<std::uint64_t>(c0);
   const std::uint64_t product1 =
       static_cast<std::uint64_t>(philox_m1) * static_cast<std::uint64_t>(c2);
-  const std::uint32_t high0 = static_cast<std::uint32_t>(product0 >> 32);
-  const std::uint32_t low0 = static_cast<std::uint32_t>(product0);
-  const std::uint32_t high1 = static_cast<std::uint32_t>(product1 >> 32);
-  const std::uint32_t low1 = static_cast<std::uint32_t>(product1);
+  const auto high0 = static_cast<std::uint32_t>(product0 >> 32);
+  const auto low0 = static_cast<std::uint32_t>(product0);
+  const auto high1 = static_cast<std::uint32_t>(product1 >> 32);
+  const auto low1 = static_cast<std::uint32_t>(product1);
   c0 = high1 ^ c1 ^ k0;
   c1 = low1;
   c2 = high0 ^ c3 ^ k1;
@@ -45,21 +45,16 @@ double uint32_to_unit(std::uint32_t value) noexcept {
 }
 
 Philox4x32::Philox4x32(std::uint64_t seed, std::uint64_t stream) noexcept
-    : counter_(0),
-      stream_(stream),
+    : stream_(stream),
       key0_(static_cast<std::uint32_t>(seed)),
-      key1_(static_cast<std::uint32_t>(seed >> 32)),
-      buffer_{0, 0, 0, 0},
-      buffer_index_(4),
-      has_spare_normal_(false),
-      spare_normal_(0.0) {}
+      key1_(static_cast<std::uint32_t>(seed >> 32)) {}
 
 std::uint32_t Philox4x32::next_u32() noexcept {
   if (buffer_index_ >= 4) {
-    std::uint32_t c0 = static_cast<std::uint32_t>(counter_);
-    std::uint32_t c1 = static_cast<std::uint32_t>(counter_ >> 32);
-    std::uint32_t c2 = static_cast<std::uint32_t>(stream_);
-    std::uint32_t c3 = static_cast<std::uint32_t>(stream_ >> 32);
+    auto c0 = static_cast<std::uint32_t>(counter_);
+    auto c1 = static_cast<std::uint32_t>(counter_ >> 32);
+    auto c2 = static_cast<std::uint32_t>(stream_);
+    auto c3 = static_cast<std::uint32_t>(stream_ >> 32);
     std::uint32_t k0 = key0_;
     std::uint32_t k1 = key1_;
     philox_block(c0, c1, c2, c3, k0, k1);
@@ -98,8 +93,8 @@ void Philox4x32::fill_uniform(std::uint64_t seed, std::uint64_t stream, std::uin
                               std::span<double> output) noexcept {
   Philox4x32 generator(seed, stream);
   generator.counter_ = counter_base;
-  for (std::size_t i = 0; i < output.size(); ++i) {
-    output[i] = generator.next_uniform();
+  for (double& value : output) {
+    value = generator.next_uniform();
   }
 }
 
@@ -107,8 +102,8 @@ void Philox4x32::fill_normal(std::uint64_t seed, std::uint64_t stream, std::uint
                              std::span<double> output) noexcept {
   Philox4x32 generator(seed, stream);
   generator.counter_ = counter_base;
-  for (std::size_t i = 0; i < output.size(); ++i) {
-    output[i] = generator.next_normal();
+  for (double& value : output) {
+    value = generator.next_normal();
   }
 }
 

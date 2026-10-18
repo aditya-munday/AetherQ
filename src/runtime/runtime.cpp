@@ -12,7 +12,7 @@ constexpr std::size_t default_queue_capacity = 4096;
 }
 
 Runtime::Runtime(RuntimeConfig config, std::unique_ptr<Executor> executor, Logger& logger)
-    : config_(std::move(config)), executor_(std::move(executor)), logger_(&logger) {}
+    : config_(config), executor_(std::move(executor)), logger_(&logger) {}
 
 Runtime::Runtime(Runtime&&) noexcept = default;
 Runtime& Runtime::operator=(Runtime&&) noexcept = default;

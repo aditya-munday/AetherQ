@@ -8,7 +8,7 @@ namespace aetherq::cli {
 
 struct BenchAllocationOptions {
   std::size_t items{100000};
-  std::string allocator{};
+  std::string allocator;
   bool json_output{false};
   std::size_t repetitions{5};
   std::size_t warmup{1};

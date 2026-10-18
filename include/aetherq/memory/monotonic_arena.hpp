@@ -28,10 +28,10 @@ public:
   [[nodiscard]] std::span<std::byte> storage() noexcept;
 
 private:
-  std::byte* base_;
+  std::byte* base_{nullptr};
   std::size_t capacity_;
-  std::size_t offset_;
-  std::size_t peak_;
+  std::size_t offset_{0};
+  std::size_t peak_{0};
   AllocationRecorder* recorder_;
 };
 

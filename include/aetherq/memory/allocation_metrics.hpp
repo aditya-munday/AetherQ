@@ -23,7 +23,7 @@ struct AllocationMetrics {
   std::uint64_t deallocation_count{0};
   std::uint64_t reuse_count{0};
   std::uint64_t failure_count{0};
-  std::vector<std::uint64_t> latency_ns{};
+  std::vector<std::uint64_t> latency_ns;
 };
 
 class AllocationRecorder {

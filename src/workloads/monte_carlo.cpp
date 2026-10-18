@@ -44,7 +44,7 @@ void accumulate_paths(std::size_t begin, std::size_t end, const PricingParameter
       (parameters.rate - (0.5 * parameters.volatility * parameters.volatility)) * dt;
   const double diffusion = parameters.volatility * std::sqrt(dt);
   const double discount = std::exp(-parameters.rate * parameters.maturity);
-  const double steps_as_double = static_cast<double>(parameters.steps);
+  const auto steps_as_double = static_cast<double>(parameters.steps);
 
   for (std::size_t path = begin; path < end; ++path) {
     Philox4x32 generator(parameters.seed, static_cast<std::uint64_t>(path) + 1);
@@ -71,7 +71,7 @@ double standard_error(double sum, double square_sum, std::size_t count) {
   if (count == 0) {
     return 0.0;
   }
-  const double n = static_cast<double>(count);
+  const auto n = static_cast<double>(count);
   const double mean = sum / n;
   const double variance = (square_sum / n) - (mean * mean);
   return std::sqrt(variance > 0.0 ? variance / n : 0.0);
@@ -148,7 +148,7 @@ Result<MonteCarloResult> monte_carlo_price(Runtime& runtime, std::size_t paths, 
   MonteCarloResult result;
   result.paths = paths;
   result.steps = steps;
-  const double count = static_cast<double>(paths);
+  const auto count = static_cast<double>(paths);
   result.european_price = accumulator.european_sum / count;
   result.asian_price = accumulator.asian_sum / count;
   result.european_standard_error =

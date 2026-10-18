@@ -20,14 +20,14 @@ public:
                           std::span<double> output) noexcept;
 
 private:
-  std::uint64_t counter_;
+  std::uint64_t counter_{0};
   std::uint64_t stream_;
   std::uint32_t key0_;
   std::uint32_t key1_;
-  std::uint32_t buffer_[4];
-  std::size_t buffer_index_;
-  bool has_spare_normal_;
-  double spare_normal_;
+  std::uint32_t buffer_[4]{0, 0, 0, 0};
+  std::size_t buffer_index_{4};
+  bool has_spare_normal_{false};
+  double spare_normal_{0.0};
 };
 
 }

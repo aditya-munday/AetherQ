@@ -9,13 +9,11 @@ namespace aetherq {
 
 FixedPool::FixedPool(std::size_t object_bytes, std::size_t object_count, std::size_t alignment,
                      AllocationRecorder* recorder)
-    : storage_(nullptr),
-      object_bytes_(object_bytes),
+    : object_bytes_(object_bytes),
       object_count_(object_count),
       stride_(round_up(object_bytes, alignment)),
       alignment_(alignment),
       free_count_(object_count),
-      reuse_count_(0),
       recorder_(recorder) {
   const std::size_t effective_count = object_count == 0 ? 1 : object_count;
   const std::size_t effective_stride = stride_ == 0 ? alignment : stride_;
