@@ -28,7 +28,7 @@ jobs:
       CC: ${{ matrix.compiler == 'gcc' && 'gcc-14' || 'clang-18' }}
       CXX: ${{ matrix.compiler == 'gcc' && 'g++-14' || 'clang++-18' }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           submodules: false
       - name: Install compilers
